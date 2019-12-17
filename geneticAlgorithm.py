@@ -1,6 +1,7 @@
 from random import randint
 from copy import deepcopy
 from math import inf
+from plot import plotGenerations
 
 
 class GeneticAlgorithm:
@@ -88,12 +89,17 @@ class GeneticAlgorithm:
 
     def geneticAlgorithm(self, numberOfGenerations):
         initialGeneration = self.makeInitialPopulation()
+        tmp = initialGeneration
         for i in range(numberOfGenerations):
             self.printGeneration(initialGeneration, i)
             newGeneration = self.mutate(self.crossOver(self.runTournument(initialGeneration)))
             for i in range(len(newGeneration)):
                 initialGeneration.pop(randint(0, len(initialGeneration)-1))
             initialGeneration = newGeneration + initialGeneration
+        return tmp, initialGeneration
 
     def run(self):
-        self.geneticAlgorithm(self.numberOfGenerations)
+        initialGenration, lastGeneration = self.geneticAlgorithm(self.numberOfGenerations)
+        plotGenerations(self.calculateFitnessForWholeGeneration(initialGenration),
+                        self.calculateFitnessForWholeGeneration(lastGeneration),
+                        self.numberOfGenerations)
