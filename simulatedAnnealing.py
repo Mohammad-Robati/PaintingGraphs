@@ -5,12 +5,12 @@ from math import log2
 
 class SimulatedAnnealing:
 
-    def __init__(self, initalTemp, probabilityFunction):
+    def __init__(self, initalTemp, probabilityFunction, numberOfProvinces, numberOfEdges, graph):
         self.initialTemp = initalTemp
         self.probabiltyFunction = probabilityFunction
-        self.numberOfProvinces = 31
-        self.numberOfEdges = 73
-        return
+        self.numberOfProvinces = numberOfProvinces
+        self.numberOfEdges = numberOfEdges
+        self.graph = graph
 
     def initializeState(self):
         return [randint(0, 3) for i in range(self.numberOfProvinces)]
@@ -24,9 +24,9 @@ class SimulatedAnnealing:
 
     def calculateValue(self, state):
         sum = 0
-        for i in range(len(state)):
-            for j in range(len(state)):
-                sum += int(state[i] != state[j])
+        for node in self.graph:
+            for neighbour in self.graph[node]:
+                sum += int(state[int(node)] != state[int(neighbour)])
         return sum / self.numberOfEdges
 
     def calculateProbabilty(self, type, t):
@@ -42,7 +42,9 @@ class SimulatedAnnealing:
     def simulatedAnnealingAlgorithm(self):
         state = self.initializeState()
         print('Initial Value:  ', self.calculateValue(state))
-        for t in range(100):
+        print(state)
+        print()
+        for t in range(1000):
             next = self.getRandomNextState(state)
             valueDiff = self.calculateValue(next) - self.calculateValue(state)
             if valueDiff > 0:
@@ -51,6 +53,7 @@ class SimulatedAnnealing:
                 if uniform(0, 1) <= self.calculateProbabilty(self.probabiltyFunction, t):
                     state = next
         print('Final Value:    ', self.calculateValue(state))
+        print(state)
 
     def run(self):
         self.simulatedAnnealingAlgorithm()

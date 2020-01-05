@@ -7,13 +7,14 @@ from plot import plotGenerations
 class GeneticAlgorithm:
 
     def __init__(self, numberOfGenerations, populationSize,
-                 tournumentSize, mutationRate):
+                 tournumentSize, mutationRate, numberOfProvinces, numberOfEdges, graph):
         self.numberOfGenerations = numberOfGenerations
         self.populationSize = populationSize
         self.tournumentSize = tournumentSize
         self.mutationRate = mutationRate
-        self.numberOfProvinces = 31
-        self.numberOfEdges = 73
+        self.numberOfProvinces = numberOfProvinces
+        self.numberOfEdges = numberOfEdges
+        self.graph = graph
 
     def makeInitialPopulation(self):
         chromosomes = []
@@ -24,9 +25,9 @@ class GeneticAlgorithm:
 
     def calculateFitnessFunction(self, chromosome):
         sum = 0
-        for i in range(len(chromosome)):
-            for j in range(len(chromosome)):
-                sum += int(chromosome[i] != chromosome[j])
+        for node in self.graph:
+            for neighbour in self.graph[node]:
+                sum += int(chromosome[int(node)] != chromosome[int(neighbour)])
         return sum / self.numberOfEdges
 
     def runTournument(self, chromosomes):
@@ -53,8 +54,8 @@ class GeneticAlgorithm:
             if len(parents)-1 > 0:
                 father = parents.pop(randint(0, len(parents) - 1))  # :D
                 mother = parents.pop(randint(0, len(parents) - 1))
-                fatherGenes = father[0:15]
-                motherGenes = mother[15:31]
+                fatherGenes = father[0:int(self.numberOfProvinces/2)]
+                motherGenes = mother[int(self.numberOfProvinces/2):self.numberOfProvinces]
                 child = fatherGenes + motherGenes
                 childs.append(child)
             else:
@@ -88,18 +89,18 @@ class GeneticAlgorithm:
         return min, avg, max
 
     def geneticAlgorithm(self, numberOfGenerations):
+        generations = []
         initialGeneration = self.makeInitialPopulation()
-        tmp = initialGeneration
+        generations.append(self.calculateFitnessForWholeGeneration(initialGeneration))
         for i in range(numberOfGenerations):
             self.printGeneration(initialGeneration, i)
             newGeneration = self.mutate(self.crossOver(self.runTournument(initialGeneration)))
+            generations.append(self.calculateFitnessForWholeGeneration(newGeneration))
             for i in range(len(newGeneration)):
                 initialGeneration.pop(randint(0, len(initialGeneration)-1))
             initialGeneration = newGeneration + initialGeneration
-        return tmp, initialGeneration
+        return generations
 
     def run(self):
-        initialGenration, lastGeneration = self.geneticAlgorithm(self.numberOfGenerations)
-        plotGenerations(self.calculateFitnessForWholeGeneration(initialGenration),
-                        self.calculateFitnessForWholeGeneration(lastGeneration),
-                        self.numberOfGenerations)
+        generations = self.geneticAlgorithm(self.numberOfGenerations)
+        plotGenerations(generations)
